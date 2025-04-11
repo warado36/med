@@ -38,8 +38,8 @@ med                # Start with empty buffer
 ### **Commands**  
 | Command      | Action                               |  
 |--------------|--------------------------------------|  
-| ld           | list directories in the current path |  
-| cd [path]    | change the current working directory |  
+| ld           | list directories in a current path   |  
+| cd [path]    | change a current working directory   |  
 | a            | append text                          |  
 | i[bfre]      | insert text                          |  
 | p[:from:,to] | print buffer                         |  
