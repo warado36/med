@@ -1,4 +1,3 @@
-//use std::collections::HashMap;
 use std::env;
 
 const HELP_MESSAGE: &str = r#"Usage: program [OPTIONS]
@@ -11,13 +10,11 @@ Options:
 const VERSION: &str = "1.0-rust version";
 
 fn main() {
-    // NOTE: initial memory allocation
-
-    // NOTE: parsing args
     let mut args: Vec<String> = Vec::new();
     for arg in env::args().skip(1) {
         args.push(arg);
     }
+    println!("{:?} {}", args, args.len());
     for arg in args {
         match arg.as_str() {
             s if s.starts_with("--") => {
@@ -67,34 +64,5 @@ fn main() {
             _ => (),
         }
     }
-
-    // NOTE: init()
-//    let mut buffer: HashMap<&str, Vec<String>> = HashMap::new();
-//    let mut current_buffer: &str = "empty"
-    println!("Mini-editor (type 'h' for help)");
-    println!("                   __        \n.--------.-----.--|  |══     \n|        |  -__|  _  |════   \n|__|__|__|_____|_____|═══════\n");
-//    'main: loop {
-//        init();
-//        'editing: loop {
-//            parse(input());
-//        }
-//    }
 }
 
-//fn help() {
-//
-//}
-//
-//fn init() {
-//
-//}
-
-
-
-enum InitState {
-    AddBuffer,
-    RemoveBuffer,
-    ChangeBuffer,
-    AssociateBuffer,
-    EmptyBuffer
-}
