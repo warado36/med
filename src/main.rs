@@ -1,7 +1,9 @@
 //use std::collections::HashMap;
 use std::env;
+use std::io;
+use std::io::Write;
 
-const HELP_MESSAGE: &str = r#"Usage: program [OPTIONS]
+const HELP_MESSAGE: &str = r#"Usage: program [OPTIONS] [PATH]
 
 Options:
   -m, --minimal   run with default configuration
@@ -10,8 +12,24 @@ Options:
 
 const VERSION: &str = "1.0-rust version";
 
+const HELP: &str = r#"Commands:
+  ld           - list directories in the current path
+  cd [path]    - change the current working directory
+  a            - append text
+  i[bfre]      - insert text
+  p[:from:,to] - print buffer
+  s [expr]     - search in buffer
+  d[from:,to]  - delete from buffer
+  w [file]     - write to file
+  r [file]     - read from file
+  q            - quit
+  h            - help"#;
+
+
 fn main() {
     // NOTE: initial memory allocation
+//    let mut buffer: HashMap<&str, Vec<String>> = HashMap::new();
+//    let mut current_buffer: &str = "empty";
 
     // NOTE: parsing args
     let mut args: Vec<String> = Vec::new();
@@ -69,32 +87,46 @@ fn main() {
     }
 
     // NOTE: init()
-//    let mut buffer: HashMap<&str, Vec<String>> = HashMap::new();
-//    let mut current_buffer: &str = "empty"
     println!("Mini-editor (type 'h' for help)");
     println!("                   __        \n.--------.-----.--|  |══     \n|        |  -__|  _  |════   \n|__|__|__|_____|_____|═══════\n");
-//    'main: loop {
-//        init();
-//        'editing: loop {
-//            parse(input());
-//        }
-//    }
+    loop {
+        init();
+        loop {
+            let mut input_cmd = String::new();
+            parse(input(&mut input_cmd));
+        }
+    }
 }
 
 //fn help() {
 //
 //}
-//
-//fn init() {
-//
-//}
 
 
-
-enum InitState {
-    AddBuffer,
-    RemoveBuffer,
-    ChangeBuffer,
-    AssociateBuffer,
-    EmptyBuffer
+fn input(input_cmd: &mut String) -> Vec<&str> {
+    print!("* ");
+    io::stdout().flush().expect("Failed to flush stdout");
+    io::stdin().read_line(input_cmd).expect("Error: failed to read");
+    let parts: Vec<&str> = input_cmd.trim().split_whitespace().collect();
+    parts
 }
+
+fn parse(cmd: Vec<&str>) {
+    if cmd.len() > 0 {
+        if cmd[0] == "q" {
+            std::process::exit(0);
+        }
+    }
+}
+
+fn init() {
+    ()
+}
+
+//enum InitState {
+//    AddBuffer,
+//    RemoveBuffer,
+//    ChangeBuffer,
+//    AssociateBuffer,
+//    EmptyBuffer
+//}
