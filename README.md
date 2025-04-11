@@ -31,7 +31,7 @@ Mini-editor (type 'h' for help)
 
 ## **🛠 Usage**  
 ```bash
-python med                # Start with empty buffer (python version)
+python med.py                # Start with empty buffer (python version)
 ```  
 ---
 
