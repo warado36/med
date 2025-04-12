@@ -28,10 +28,14 @@ const HELP: &str = r#"Commands:
 
 fn main() {
     // NOTE: initial memory allocation
-    let mut buffer: HashMap<&str, Vec<String>> = HashMap::new();
-    let mut current_buffer: &str = "empty";
+    let mut buffer: HashMap<String, Vec<String>> = HashMap::new();
+    //buffer.insert(String::from("no name"), Vec::new());
+    let mut current_buffer: String = String::from("no name");
+    let mut data: String = String::new();
     let mut reinit: bool = false;
-    let mut initstate: InitState = InitState::EmptyBuffer;
+    let mut initstate: InitState = InitState::AddBuffer;
+    let mut lua_mods: Vec<LuaInit> = Vec::new();
+    let mut lua_init: bool = true;
 
     // NOTE: parsing args
     {
@@ -52,7 +56,7 @@ fn main() {
                             std::process::exit(0);
                         },
                         "--minimal" => {
-                            ()
+                            lua_init = false;
                         },
                         _ => {
                             println!("Error: Unknown argument");
@@ -73,7 +77,7 @@ fn main() {
                                 std::process::exit(0);
                             },
                             'm' => {
-                                ()
+                                lua_init = false;
                             },
                             '-' => {
                                 ()
@@ -90,14 +94,15 @@ fn main() {
         }
     }
 
-    // NOTE: init()
+    // NOTE: main code
     println!("Mini-editor (type 'h' for help)");
     println!("                   __        \n.--------.-----.--|  |══     \n|        |  -__|  _  |════   \n|__|__|__|_____|_____|═══════\n");
+    plugin_init(lua_init, &mut lua_mods);
     loop {
-        init();
+        init(&mut buffer, &mut current_buffer, &mut data, &mut initstate);
         reinit = false;
         'editing: loop {
-            parse(input(), &mut reinit, &mut initstate);
+            parse(input(), &mut buffer, &mut reinit, &mut initstate, &mut current_buffer, &mut data);
             if reinit == true {
                 println!("break and reinit");
                 break 'editing
@@ -120,27 +125,119 @@ fn input() -> Vec<String> {
     parts
 }
 
-fn parse(cmd: Vec<String>, reinit: &mut bool, initstate: &mut InitState ) {
+fn parse(
+    cmd: Vec<String>, 
+    buffer: &mut HashMap<String, Vec<String>>,
+    reinit: &mut bool, 
+    initstate: &mut InitState, 
+    current_buffer: &mut String, 
+    data: &mut String) 
+{
     println!("{:?}", cmd);
     if cmd.len() > 0 {
         if cmd[0] == "q" {
             std::process::exit(0);
         }
-        if cmd[0] == "reinit" {
+        if cmd[0] == "new" {
             *reinit = true;
-            *initstate = InitState::ChangeBuffer;
+            *initstate = InitState::AddBuffer;
+
+        }
+        if cmd[0] == "remove" {
+            let mut name = String::new();
+            for i in &cmd[1..] {
+                if !name.is_empty() {
+                    name.push(' ');
+                }
+                name.push_str(i);
+            }
+            *reinit = true;
+            *initstate = InitState::RemoveBuffer;
+            *data = name.clone();
+        }
+        if cmd[0] == "name" {
+            for key in buffer.keys() {
+                print!("|{}| ", key);
+            }
+            print!("\n")
+        }
+        if cmd[0] == "current" {
+            println!("/{}/", current_buffer);
+            
         }
     }
 }
 
-fn init() {
-    ()
+fn plugin_init(lua_init: bool, lua_mods: &mut Vec<LuaInit>) {
+    if lua_init == true {
+        ()
+    }
 }
 
-enum InitState {
+fn init(
+    buffer: &mut HashMap<String, Vec<String>>, 
+    current_buffer: &mut String,
+    data: &mut String,
+    initstate: &mut InitState
+    ) 
+{
+    match initstate {
+        InitState::AddBuffer => {
+            let mut index = String::new();
+            if buffer.contains_key(&String::from("no name")) {
+                let mut i = 1;
+                while buffer.contains_key(&format!("no name {}", i)) {
+                    i += 1;}
+                index = format!(" {}", i);
+            }
+            buffer.insert(format!("{}{}", "no name", index), Vec::new());
+            *current_buffer = format!("{}{}", "no name", index);
+            *data = String::new();
+            *initstate = InitState::Nothing;
+        },
+        InitState::RemoveBuffer => {
+            print!("\tDo you want to remove the buffer?(y/n): ");
+            let agreement = input()[0].to_lowercase();
+            if ["y", "yes", "fuck"].contains(&&*agreement) {
+                buffer.remove(data);
+                if buffer.is_empty() {
+                    std::process::exit(0);
+                }
+            }
+        },
+        InitState::ChangeBuffer => {
+            if buffer.contains_key(current_buffer) && current_buffer.starts_with("a'(") { // TODO: 
+                //buffer.remove()
+                ()
+            }
+        },
+        InitState::MakeAssociatedBuffer => { // TODO: 
+            buffer.insert(format!("a'({}", current_buffer), Vec::new());
+
+        },
+        InitState::RenameBuffer => { // TODO:
+            if let Some(value) = buffer.remove(current_buffer) {
+                buffer.insert(data.clone(), value);
+            }
+        },
+        InitState::Nothing => {
+            ()
+        }
+    }
+}
+
+enum InitState { //init()
     AddBuffer,
     RemoveBuffer,
     ChangeBuffer,
-    AssociateBuffer,
-    EmptyBuffer
+    MakeAssociatedBuffer,
+    RenameBuffer,
+    Nothing
+}
+
+enum LuaInit { //lua_mods: Vec<LuaInit>
+    Nothing,
+    Print,
+    Input,
+    Command 
 }
