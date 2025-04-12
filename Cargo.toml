@@ -1,7 +1,8 @@
 [package]
-name = "new"
+name = "med"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-mlua  = { version = "0.10.3", features = ["luajit", "vendored"] }
+mlua  = { version = "=0.10.3", features = ["luajit", "vendored"] }
+rustyline = "=5.0.2"
