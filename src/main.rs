@@ -99,10 +99,11 @@ fn main() {
     println!("                   __        \n.--------.-----.--|  |══     \n|        |  -__|  _  |════   \n|__|__|__|_____|_____|═══════\n");
     plugin_init(lua_init, &mut lua_mods);
     loop {
-        init(&mut buffer, &mut current_buffer, &mut data, &mut initstate);
+        init(&mut buffer, &mut current_buffer, &mut data, initstate);
         reinit = false;
+        initstate = InitState::Nothing;
         'editing: loop {
-            parse(input(), &mut buffer, &mut reinit, &mut initstate, &mut current_buffer, &mut data);
+            parse(input(), &mut buffer, &current_buffer, &mut data, &mut reinit, &mut initstate);
             if reinit == true {
                 println!("break and reinit");
                 break 'editing
@@ -128,12 +129,27 @@ fn input() -> Vec<String> {
 fn parse(
     cmd: Vec<String>, 
     buffer: &mut HashMap<String, Vec<String>>,
+    current_buffer: &String, 
+    data: &mut String,
     reinit: &mut bool, 
-    initstate: &mut InitState, 
-    current_buffer: &mut String, 
-    data: &mut String) 
+    initstate: &mut InitState) 
 {
-    println!("{:?}", cmd);
+    //println!("{:?}", cmd);
+//    match cmd {
+//        s if s.len() == 0 => {
+//            //println!("");
+//            ()
+//        },
+//        s if s.len() == 1 => {
+//            ()
+//        },
+//        s if s.len() > 1  => {
+//            ()
+//        }
+//    }
+
+
+    //debug functions
     if cmd.len() > 0 {
         if cmd[0] == "q" {
             std::process::exit(0);
@@ -168,17 +184,11 @@ fn parse(
     }
 }
 
-fn plugin_init(lua_init: bool, lua_mods: &mut Vec<LuaInit>) {
-    if lua_init == true {
-        ()
-    }
-}
-
 fn init(
     buffer: &mut HashMap<String, Vec<String>>, 
     current_buffer: &mut String,
     data: &mut String,
-    initstate: &mut InitState
+    initstate: InitState
     ) 
 {
     match initstate {
@@ -193,7 +203,6 @@ fn init(
             buffer.insert(format!("{}{}", "no name", index), Vec::new());
             *current_buffer = format!("{}{}", "no name", index);
             *data = String::new();
-            *initstate = InitState::Nothing;
         },
         InitState::RemoveBuffer => {
             print!("\tDo you want to remove the buffer?(y/n): ");
@@ -202,6 +211,10 @@ fn init(
                 buffer.remove(data);
                 if buffer.is_empty() {
                     std::process::exit(0);
+                } else if current_buffer == data {
+                    for i in buffer.keys() {
+                        *current_buffer = i.to_string();
+                    }
                 }
             }
         },
@@ -209,7 +222,7 @@ fn init(
             if buffer.contains_key(current_buffer) && current_buffer.starts_with("a'(") { // TODO: 
                 //buffer.remove()
                 ()
-            }
+            } 
         },
         InitState::MakeAssociatedBuffer => { // TODO: 
             buffer.insert(format!("a'({}", current_buffer), Vec::new());
@@ -221,8 +234,14 @@ fn init(
             }
         },
         InitState::Nothing => {
-            ()
+            println!("Nothing is happend. Maybe it'a a bug");
         }
+    }
+}
+
+fn plugin_init(lua_init: bool, lua_mods: &mut Vec<LuaInit>) {
+    if lua_init == true {
+        ()
     }
 }
 

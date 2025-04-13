@@ -17,7 +17,7 @@ def print_help():
 def main():
     global buffer, filename
     print("Mini-editor (type 'h' for help)")
-    print("                   __        \n.--------.-----.--|  |══     \n|        |  -__|  _  |════   \n|__|__|__|_____|_____|═══════\n")
+    print("                   __        \n.--------.-----.--|  |══     \n|        |  -__|  _  |════   \n|__|__|__|_____|_____|═══════   --   for embedded systems\n")
 
     while True:
         try:
